@@ -1,0 +1,28 @@
+name: CapsuleToy
+version: 1.1
+api-version: 1.21
+description: capsuletoy.
+author: kubotan
+main: space.gorogoro.capsuletoy.CapsuleToy
+
+commands:
+  capsuletoy:
+    description: Commands to manage your capsuletoy
+    usage: |
+      Use /help capsuletoy [subcommand] for more information
+      /<command> list - List all capsuletoy
+      /<command> modify <capsuletoy_name> - Modify a capsuletoy
+      /<command> delete <capsuletoy_name> - Delete a capsuletoy
+      /<command> ticket <player_name> - Issue a ticket
+  capsuletoy list:
+    description: List all capsuletoy
+    usage: /<command> list
+  capsuletoy modify:
+    description: Modify a capsuletoy chest
+    usage: /<command> modify <capsuletoy_name>
+  capsuletoy delete:
+    description: Delete a capsuletoy
+    usage: /<command> delete <capsuletoy_name>
+  capsuletoy ticket:
+    description: Issue a ticket
+    usage: /<command> ticket <player_name>

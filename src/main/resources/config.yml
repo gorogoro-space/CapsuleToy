@@ -1,0 +1,15 @@
+query-timeout: 10
+cache-expire-seconds: 3600
+ticket-display-name: "&f&lCAPSULETOY TICKET"
+ticket-lore1: "It can be used in the place of XXXX."
+ticket-lore2: "Please do not let other people know the capsuletoy code."
+sign-line1-prefix: "&6&l"
+sign-line2-prefix: ""
+sign-line3: "&8Right click with"
+sign-line4: "&8ticket in hand!"
+hold-the-ticket: "Please hold the ticket on your right hand."
+not-found-ticket-code: "Ticket code is used or unregistered."
+not-found-chest1: "I can not find a chest of capsuletoy."
+not-found-chest2: "Please set chest with /capsuletoy modify <capsuletoy_name>."
+not-found-pick: "Losing ticket."
+found-pick: "Sent the prize to the inventory."
