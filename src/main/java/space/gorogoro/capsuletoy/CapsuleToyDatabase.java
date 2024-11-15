@@ -434,7 +434,6 @@ public class CapsuleToyDatabase {
    */
   public Integer getCapsuleToy(String capsuleToyName, String capsuleToyDisplayName, String capsuleToyDetail, String worldName, Integer signX, Integer signY, Integer signZ){
     PreparedStatement prepStmt = null;
-    ResultSet rs = null;
     Integer capsuleToyId = null;
     try {
 
@@ -459,21 +458,14 @@ public class CapsuleToyDatabase {
       prepStmt.setInt(5, signX);
       prepStmt.setInt(6, signY);
       prepStmt.setInt(7, signZ);
-      // Bukkit.getServer().getLogger().warning(prepStmt.toString());
       prepStmt.addBatch();
       prepStmt.executeBatch();
-      rs = prepStmt.getGeneratedKeys();
-      if (rs.next()) {
-        capsuleToyId = rs.getInt(1);
-      }
-      closeRs(rs);
       closePrepStmt(prepStmt);
       refreshCache();
-
+      capsuleToyId = getCapsuleToy(capsuleToyName);
     } catch (SQLException e) {
       CapsuleToyUtility.logStackTrace(e);
     } finally {
-      closeRs(rs);
       closePrepStmt(prepStmt);
     }
     return capsuleToyId;
