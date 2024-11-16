@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.regex.Pattern;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -142,6 +143,7 @@ public class CapsuleToyListener implements Listener{
       }
 
       String ticketCode = lores.get(2).replace(CapsuleToyCommand.PREFIX_TICKET_CODE, "");
+      ticketCode = ticketCode.replace("CAPSLUETOY CODE:", "");
       if(!capsuletoy.getDatabase().existsTicket(ticketCode)) {
         CapsuleToyUtility.sendMessage(p, ChatColor.translateAlternateColorCodes('&', capsuletoy.getConfig().getString("not-found-ticket-code")));
         return;
