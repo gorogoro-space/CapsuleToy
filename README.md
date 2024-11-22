@@ -13,3 +13,6 @@ sqlite> .quit
 cd ./CapsuleToy
 sqlite3 ./sqlite.db < ./old_ticket_code.txt
 ~~~
+
+# Fixed a spelling mistake.
+Works with capsuletoy instead of capsluetoy. The sign needs to be redone.
