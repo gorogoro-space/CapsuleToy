@@ -1,6 +1,6 @@
 name: CapsuleToy
-version: 1.2
-api-version: 1.21
+version: '${version}'
+api-version: '1.21.11'
 description: capsuletoy.
 author: kubotan
 main: space.gorogoro.capsuletoy.CapsuleToy
