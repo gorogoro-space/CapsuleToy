@@ -30,7 +30,10 @@
 - バージョンは `gradle.properties` の `version` だけで管理する。`plugin.yml` の `version: '${version}'` は `processResources` でビルド時に置き換わる
 - SQLite の JDBC ドライバ(`org.sqlite.JDBC`)はサーバー(Paper)に入っているものを使う。jar には同梱しない
 - パッケージ: `space.gorogoro.capsuletoy`(**すべて小文字**。大文字が混ざると plugin.yml の main と一致せず起動しない)
-- ビルド時に非推奨 API の警告が出る(`ChatColor`、`ItemMeta#setDisplayName`/`setLore`/`getLore`、`SignChangeEvent#getLine`/`setLine`、メタデータ、`finalize()` という名前のメソッドなど)。動作には影響しない。直すのは頼まれたとき
+- 非推奨・削除予定の API は使わない(1.3 で `-Xlint:all` の警告を 0 件にした)。色コードの変換(`ChatColor.translateAlternateColorCodes` の代わり)、アイテムの名前・説明文と看板の行の Component との変換は `CapsuleToyUtility` の関数を使う
+  - 券の名前・説明文は Component 版 API(`displayName`・`lore`)で作り、`toItemComponent` で斜体を外す(旧 String 版 API と見た目をそろえるため)
+  - 券の番号は、説明文の 3 行目を `toPlainText`(色コードを除いた文字)にして読む。1.2 以前に String 版 API で作った券も同じ番号として読める。読み方を変えるときは、配布済みの古い券が使えなくならないか必ず確かめる
+  - `modify` 中のプレイヤーは、メタデータではなく `CapsuleToyUtility` の Map(UUID → 登録名)で覚える。プラグインの終了時に消す
 - 動作確認はサーバーを再起動して行う。PlugManX での読み込みは権限やコマンドの登録が不完全になることがある
 
 ## 最重要の設計方針
@@ -76,7 +79,7 @@
 - `CapsuleToyCommand.java` — 各サブコマンドの処理
 - `CapsuleToyListener.java` — 看板の設置、看板とチェストの右クリック
 - `CapsuleToyDatabase.java` — SQLite の読み書き(カプセルトイ・券の番号)と看板のキャッシュ
-- `CapsuleToyUtility.java` — 券の作成、番号の生成、セレクター(`@a` など)、景品の受け渡し、メッセージの選択
+- `CapsuleToyUtility.java` — 券の作成、番号の生成、セレクター(`@a` など)、景品の受け渡し、メッセージの選択、`modify` 中の状態、色コードと Component の変換
 - `src/main/resources/plugin.yml` — プラグイン定義
 - `src/main/resources/config.yml` / `config_jp.yml` — 英語の設定と日本語の見本
 - `build.gradle.kts` / `settings.gradle.kts` / `gradle.properties` — Gradle の設定(バージョンは `gradle.properties`)

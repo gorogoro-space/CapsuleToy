@@ -227,7 +227,7 @@ public class CapsuleToy extends JavaPlugin{
     }catch(Exception e){
       CapsuleToyUtility.logStackTrace(e);
     }finally{
-      command.finalize();
+      command.clear();
     }
     return hideUseageFlag;
   }
@@ -238,8 +238,9 @@ public class CapsuleToy extends JavaPlugin{
   @Override
   public void onDisable(){
     try{
-      database.finalize();
-      command.finalize();
+      database.close();
+      command.clear();
+      CapsuleToyUtility.clearPunches();
 
       // Unregister all event listener.
       HandlerList.unregisterAll(this);

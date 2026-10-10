@@ -3,7 +3,8 @@ package space.gorogoro.capsuletoy;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -21,7 +22,6 @@ public class CapsuleToyCommand {
   private CapsuleToy capsuletoy;
   private CommandSender sender;
   private String[] args;
-  protected static final String META_CHEST = "capsuletoy.chest";
   protected static final String PREFIX_TICKET_CODE = "CAPSULETOY CODE:";
 
   /**
@@ -51,9 +51,10 @@ public class CapsuleToyCommand {
   }
 
   /**
-   * Finalize
+   * Clear
    */
-  public void finalize() {
+  // Object#finalize(削除予定)と同じ名前を避けるため clear にしている
+  public void clear() {
     try{
       this.sender = null;
       this.args = null;
@@ -141,7 +142,7 @@ public class CapsuleToyCommand {
     }
     p.getInventory().setItem(emptySlot, ticket);
     
-    CapsuleToyUtility.sendMessage(sender, "Issue a ticket. player_name=" + p.getDisplayName());
+    CapsuleToyUtility.sendMessage(sender, "Issue a ticket. player_name=" + LegacyComponentSerializer.legacySection().serialize(p.displayName()));
     return true;
   }
 

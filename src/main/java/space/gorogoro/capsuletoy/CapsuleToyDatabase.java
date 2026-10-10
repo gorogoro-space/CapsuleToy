@@ -135,9 +135,10 @@ public class CapsuleToyDatabase {
   }
 
   /**
-   * Finalize
+   * Close
    */
-  public void finalize() {
+  // Object#finalize(削除予定)と同じ名前を避けるため close にしている
+  public void close() {
     try{
       closeCon(getCon());
       listCapsuleToySignCache  = new ArrayList<String>();
