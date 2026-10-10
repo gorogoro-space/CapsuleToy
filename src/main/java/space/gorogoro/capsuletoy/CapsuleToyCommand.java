@@ -134,21 +134,11 @@ public class CapsuleToyCommand {
       return false;
     }
 
-    String ticketCode = capsuletoy.getDatabase().getTicket();
-    if(ticketCode == null) {
+    ItemStack ticket = CapsuleToyUtility.createCodedTicket(capsuletoy, null);
+    if (ticket == null) {
       CapsuleToyUtility.sendMessage(sender, "Failure generate ticket code.");
       return false;
     }
-
-    ItemStack ticket = new ItemStack(Material.PAPER, 1);
-    ItemMeta im = ticket.getItemMeta();
-    im.setDisplayName(ChatColor.translateAlternateColorCodes('&', capsuletoy.getConfig().getString("ticket-display-name")));
-    ArrayList<String> lore = new ArrayList<String>();
-    lore.add(ChatColor.translateAlternateColorCodes('&', capsuletoy.getConfig().getString("ticket-lore1")));
-    lore.add(ChatColor.translateAlternateColorCodes('&', capsuletoy.getConfig().getString("ticket-lore2")));
-    lore.add(String.format(PREFIX_TICKET_CODE+"%s", ticketCode));
-    im.setLore(lore);
-    ticket.setItemMeta(im);
     p.getInventory().setItem(emptySlot, ticket);
     
     CapsuleToyUtility.sendMessage(sender, "Issue a ticket. player_name=" + p.getDisplayName());
@@ -161,6 +151,7 @@ public class CapsuleToyCommand {
    */
   public boolean reload() {
     capsuletoy.reloadConfig();
+    capsuletoy.loadSettings();
     CapsuleToyUtility.sendMessage(sender, "reloaded.");
     return true;
   }

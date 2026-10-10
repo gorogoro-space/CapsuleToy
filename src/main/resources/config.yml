@@ -13,3 +13,11 @@ not-found-chest1: "I can not find a chest of capsuletoy."
 not-found-chest2: "Please set chest with /capsuletoy modify <capsuletoy_name>."
 not-found-pick: "Losing ticket."
 found-pick: "Sent the prize to the inventory."
+dropped-pick: "Your inventory was full, so the prize was dropped at your feet."
+wrong-capsule: "This ticket can only be used at {0}."
+needs-named-ticket: "This capsule toy accepts only a {0} ticket."
+
+# Capsule toys that accept only a named ticket. Sign line 2, case-sensitive.
+# Read at startup and /capsuletoy reload. Missing key means infernal only.
+named-ticket-only:
+  - infernal

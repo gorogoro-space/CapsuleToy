@@ -6,9 +6,13 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 
 import org.bukkit.command.BlockCommandSender;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -28,12 +32,23 @@ public class CapsuleToy extends JavaPlugin{
   private CapsuleToyDatabase database;
   private CapsuleToyCommand command;
   private CapsuleToyListener listener;
+  private final Set<String> namedTicketOnly = new HashSet<String>();
 
   /**
    * Get CapsuleToyDatabase instance.
    */
   public CapsuleToyDatabase getDatabase() {
     return database;
+  }
+
+  // 番号だけの券。named-ticket-only に無い看板で使える。所持品へは入れない
+  public ItemStack createCodedTicket() {
+    return CapsuleToyUtility.createCodedTicket(this, null);
+  }
+
+  // 指定した名前の看板でしか使えない券。所持品へは入れない
+  public ItemStack createCodedTicket(String capsuleName) {
+    return CapsuleToyUtility.createCodedTicket(this, capsuleName);
   }
 
   /**
@@ -48,6 +63,47 @@ public class CapsuleToy extends JavaPlugin{
    */
   public CapsuleToyListener getListener() {
     return listener;
+  }
+
+  // named-ticket-only に書いた看板は、名前の無い券を受け付けない。大文字と小文字は区別する
+  public boolean requiresNamedTicket(String signName) {
+    return signName != null && namedTicketOnly.contains(signName);
+  }
+
+  // 起動時と /capsuletoy reload だけで読む
+  public void loadSettings() {
+    namedTicketOnly.clear();
+    Object raw = getConfig().get("named-ticket-only");
+    if (raw == null) {
+      namedTicketOnly.add("infernal");
+    } else if (raw instanceof String) {
+      addNamedTicketOnly((String) raw);
+    } else if (raw instanceof List) {
+      for (Object item : (List<?>) raw) {
+        if (item != null) {
+          addNamedTicketOnly(String.valueOf(item));
+        }
+      }
+    } else {
+      getLogger().warning("named-ticket-only の形が違うので、infernal だけにします。");
+      namedTicketOnly.add("infernal");
+    }
+    if (raw != null && namedTicketOnly.isEmpty() && !(raw instanceof List && ((List<?>) raw).isEmpty())) {
+      getLogger().warning("named-ticket-only に使える名前が無いので、名前の無い券はどの看板でも使えます。");
+    }
+    CapsuleToyUtility.loadMessages(this);
+  }
+
+  private void addNamedTicketOnly(String name) {
+    String trimmed = name.trim();
+    if (trimmed.isEmpty()) {
+      return;
+    }
+    if (!trimmed.matches("[0-9A-Za-z_]+")) {
+      getLogger().warning("named-ticket-only: 使えない名前を読み飛ばしました: " + trimmed);
+      return;
+    }
+    namedTicketOnly.add(trimmed);
   }
 
   /**
@@ -80,6 +136,8 @@ public class CapsuleToy extends JavaPlugin{
         Files.copy(in, new File(getDataFolder(), curFileName).toPath(), StandardCopyOption.REPLACE_EXISTING);
         in.close();
       }
+
+      loadSettings();
 
       // Initialize the database.
       database = new CapsuleToyDatabase(this);

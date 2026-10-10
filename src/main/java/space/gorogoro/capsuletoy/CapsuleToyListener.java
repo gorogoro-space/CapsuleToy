@@ -131,21 +131,37 @@ public class CapsuleToyListener implements Listener{
       event.setCancelled(true);
 
       ItemStack ticket = p.getInventory().getItemInMainHand();
+
       if( !ticket.getType().equals(Material.PAPER) ) {
         CapsuleToyUtility.sendMessage(p, ChatColor.translateAlternateColorCodes('&', capsuletoy.getConfig().getString("hold-the-ticket")));
         return;
       }
 
       List<String> lores = ticket.getItemMeta().getLore();
-      if( lores.size() != 3) {
+      if( lores.size() < 3) {
         CapsuleToyUtility.sendMessage(p, ChatColor.translateAlternateColorCodes('&', capsuletoy.getConfig().getString("hold-the-ticket")));
         return;
       }
 
       String ticketCode = lores.get(2).replace(CapsuleToyCommand.PREFIX_TICKET_CODE, "");
       ticketCode = ticketCode.replace("CAPSLUETOY CODE:", "");
-      if(!capsuletoy.getDatabase().existsTicket(ticketCode)) {
+      String boundName = capsuletoy.getDatabase().findTicketCapsule(ticketCode);
+      if(boundName == null) {
         CapsuleToyUtility.sendMessage(p, ChatColor.translateAlternateColorCodes('&', capsuletoy.getConfig().getString("not-found-ticket-code")));
+        return;
+      }
+      String signName = capsuletoy.getDatabase().getCapsuleToyName(signLoc);
+      if(!boundName.isEmpty()) {
+        if(!boundName.equals(signName)) {
+          String message = CapsuleToyUtility.configMessage(capsuletoy, "wrong-capsule");
+          message = message.replace("{0}", boundName);
+          CapsuleToyUtility.sendMessage(p, ChatColor.translateAlternateColorCodes('&', message));
+          return;
+        }
+      } else if(capsuletoy.requiresNamedTicket(signName)) {
+        String message = CapsuleToyUtility.configMessage(capsuletoy, "needs-named-ticket");
+        message = message.replace("{0}", signName);
+        CapsuleToyUtility.sendMessage(p, ChatColor.translateAlternateColorCodes('&', message));
         return;
       }
 
@@ -167,13 +183,18 @@ public class CapsuleToyListener implements Listener{
         return;
       }
 
-      ItemStack sendItem = pickItem.clone();
-      p.getInventory().addItem(sendItem);
-      CapsuleToyUtility.sendMessage(p, ChatColor.translateAlternateColorCodes('&', capsuletoy.getConfig().getString("found-pick")));
+      givePrize(p, pickItem);
 
     } catch (Exception e){
       CapsuleToyUtility.logStackTrace(e);
     }
+  }
+
+  private void givePrize(Player player, ItemStack prize) {
+    boolean stored = CapsuleToyUtility.giveOrDrop(player, prize);
+    String key = stored ? "found-pick" : "dropped-pick";
+    String message = CapsuleToyUtility.configMessage(capsuletoy, key);
+    CapsuleToyUtility.sendMessage(player, ChatColor.translateAlternateColorCodes('&', message));
   }
 
   /**

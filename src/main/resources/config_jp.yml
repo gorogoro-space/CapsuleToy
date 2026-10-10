@@ -13,3 +13,11 @@ not-found-chest1: "カプセルトイのチェストが見つかりません。"
 not-found-chest2: "/capsuletoy modify <capsuletoy_name>でチェストをセットしてください。"
 not-found-pick: "ハズレました。"
 found-pick: "賞品をインベントリに送りました。"
+dropped-pick: "インベントリが一杯なので、足元に落としました。"
+wrong-capsule: "この券は {0} でしか使えません。"
+needs-named-ticket: "このカプセルトイは、{0} の券だけで使えます。"
+
+# 名前付きの券だけを受け付けるカプセルトイ(看板の 2 行目の登録名)
+# 起動時と /capsuletoy reload のときに読む。項目が無いときは infernal だけ
+named-ticket-only:
+  - infernal

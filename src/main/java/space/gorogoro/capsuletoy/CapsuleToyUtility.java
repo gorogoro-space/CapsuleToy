@@ -1,5 +1,6 @@
 package space.gorogoro.capsuletoy;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -8,10 +9,15 @@ import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
@@ -188,5 +194,137 @@ public class CapsuleToyUtility {
       }
     }
     return latestPlayer;
+  }
+
+  // データベースに番号を作って、コード付きの券を 1 枚返す。名前がある券は、その看板でしか使えない
+  public static ItemStack createCodedTicket(CapsuleToy capsuletoy, String capsuleName) {
+    if (capsuleName != null && capsuleName.isEmpty()) {
+      capsuleName = null;
+    }
+    if (capsuleName != null && !capsuleName.matches("[0-9A-Za-z_]+")) {
+      return null;
+    }
+    String ticketCode = capsuletoy.getDatabase().getTicket(capsuleName);
+    if (ticketCode == null) {
+      return null;
+    }
+    ItemStack ticket = new ItemStack(Material.PAPER, 1);
+    ItemMeta meta = ticket.getItemMeta();
+    String name = capsuletoy.getConfig().getString("ticket-display-name");
+    if (name == null) {
+      name = "";
+    }
+    meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
+    ArrayList<String> lore = new ArrayList<String>();
+    String lore1 = capsuletoy.getConfig().getString("ticket-lore1");
+    String lore2 = capsuletoy.getConfig().getString("ticket-lore2");
+    lore.add(ChatColor.translateAlternateColorCodes('&', lore1 == null ? "" : lore1));
+    lore.add(ChatColor.translateAlternateColorCodes('&', lore2 == null ? "" : lore2));
+    lore.add(String.format(CapsuleToyCommand.PREFIX_TICKET_CODE + "%s", ticketCode));
+    if (capsuleName != null) {
+      lore.add(ChatColor.GRAY + capsuleName);
+    }
+    meta.setLore(lore);
+    ticket.setItemMeta(meta);
+    return ticket;
+  }
+
+  // 入る余地が束の個数以上あるときだけインベントリへ入れる。足りなければ束ごと足元へ落とす
+  public static boolean giveOrDrop(Player player, ItemStack item) {
+    ItemStack clone = item.clone();
+    if (hasEnoughSpace(player, clone)) {
+      player.getInventory().addItem(clone);
+      return true;
+    }
+    World world = player.getWorld();
+    if (world != null) {
+      world.dropItemNaturally(player.getLocation(), clone);
+    }
+    return false;
+  }
+
+  public static boolean hasEnoughSpace(Player player, ItemStack item) {
+    int maxStack = item.getMaxStackSize();
+    int space = 0;
+    for (ItemStack invItem : player.getInventory().getStorageContents()) {
+      if (invItem == null) {
+        space += maxStack;
+      } else if (invItem.isSimilar(item)) {
+        space += maxStack - invItem.getAmount();
+      }
+    }
+    return space >= item.getAmount();
+  }
+
+  private static YamlConfiguration fileConfig;
+
+  // 起動時と /capsuletoy reload だけで config.yml を読む
+  public static void loadMessages(CapsuleToy plugin) {
+    File file = new File(plugin.getDataFolder(), "config.yml");
+    fileConfig = YamlConfiguration.loadConfiguration(file);
+  }
+
+  // config.yml に書いてあればその文。無いときは、ほかの文が日本語なら日本語、それ以外は英語
+  public static String configMessage(CapsuleToy plugin, String key) {
+    if (fileConfig == null) {
+      loadMessages(plugin);
+    }
+    YamlConfiguration file = fileConfig;
+    if (file.contains(key)) {
+      String value = file.getString(key);
+      if (value != null) {
+        return value;
+      }
+    }
+    if (usesJapanese(file)) {
+      if ("found-pick".equals(key)) {
+        return "賞品をインベントリに送りました。";
+      }
+      if ("dropped-pick".equals(key)) {
+        return "インベントリが一杯なので、足元に落としました。";
+      }
+      if ("wrong-capsule".equals(key)) {
+        return "この券は {0} でしか使えません。";
+      }
+      if ("needs-named-ticket".equals(key)) {
+        return "このカプセルトイは、{0} の券だけで使えます。";
+      }
+    }
+    if ("found-pick".equals(key)) {
+      return "Sent the prize to the inventory.";
+    }
+    if ("dropped-pick".equals(key)) {
+      return "Your inventory was full, so the prize was dropped at your feet.";
+    }
+    if ("wrong-capsule".equals(key)) {
+      return "This ticket can only be used at {0}.";
+    }
+    if ("needs-named-ticket".equals(key)) {
+      return "This capsule toy accepts only a {0} ticket.";
+    }
+    return "";
+  }
+
+  private static boolean usesJapanese(YamlConfiguration file) {
+    String[] samples = new String[] {"hold-the-ticket", "ticket-display-name", "ticket-lore1", "found-pick"};
+    for (int i = 0; i < samples.length; i++) {
+      String text = file.getString(samples[i]);
+      if (text != null && hasJapanese(text)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean hasJapanese(String text) {
+    for (int i = 0; i < text.length(); i++) {
+      Character.UnicodeBlock block = Character.UnicodeBlock.of(text.charAt(i));
+      if (block == Character.UnicodeBlock.HIRAGANA
+          || block == Character.UnicodeBlock.KATAKANA
+          || block == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS) {
+        return true;
+      }
+    }
+    return false;
   }
 }
